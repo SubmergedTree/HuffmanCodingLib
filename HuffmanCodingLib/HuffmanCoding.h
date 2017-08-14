@@ -6,4 +6,7 @@ class HelloWorld
 public:
 	static int getTwo();
 	int getN() const;
+
+
+	void foo();
 };
