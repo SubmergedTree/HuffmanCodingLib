@@ -20,10 +20,27 @@ namespace HuffmanCoding
 		virtual const char* what() const throw();
 	};
 
-	enum Flags 
+	class NotInTableException : public std::exception
+	{
+	private:
+		char key;
+	public:
+		explicit NotInTableException(char key);
+		virtual const char* what() const throw();
+	};
+
+	enum EncoderInputFlags 
 	{
 		filename,
 		rawString
+	};
+
+	enum PrintFlags
+	{
+		alphabeticalOrder,
+		shortestCode,
+		longestCode,
+		unsorted
 	};
 
 	class Encoder
@@ -51,16 +68,17 @@ namespace HuffmanCoding
 
 		std::map<char, std::string> huffTable;
 
-		void createTree(std::map<char, unsigned int>& countedCharacters);
-		void createTable(Node::sharedPtr node);
+		Node::sharedPtr createTree(std::map<char, unsigned int>& countedCharacters);
+		void createTable(Node::sharedPtr node, std::string res);
 		void readRawFile(std::string const& filename, std::string& out);
 		void countCharacters(std::string& rawStr, std::map<char, unsigned int>& countedCharacters);
 
 	public:
-		Encoder(std::string const& in,Flags flag);
+		Encoder(std::string const& in,EncoderInputFlags flag);
 
-		void printTable();
+		void printTable(PrintFlags flag);
 		void safeToFile();
+		std::string getFromTable(char key);
 	};
 
 

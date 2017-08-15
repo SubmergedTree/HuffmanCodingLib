@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "CppUnitTest.h"
-#include "HuffmanCoding.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
@@ -12,7 +11,19 @@ namespace Test
 		
 		TEST_METHOD(TestMethod1)
 		{
+			HuffmanCoding::Encoder encoder("test", HuffmanCoding::EncoderInputFlags::rawString);
+			
+			std::string res;
+			try
+			{
+				res = encoder.getFromTable('t');
+			}
+			catch(HuffmanCoding::NotInTableException& e)
+			{
+				Assert::Fail();
+			}
 			//Assert::AreEqual(2, HelloWorld::getTwo());
+			Logger::WriteMessage(res.c_str());
 		}
 
 	};
