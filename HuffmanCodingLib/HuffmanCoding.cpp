@@ -6,27 +6,8 @@
 #include <sstream>
 
 namespace HuffmanCoding
-{
-	FileNotFoundException::FileNotFoundException(std::string fileName) : fileName(fileName)
-	{}
-
-	const char * FileNotFoundException::what() const throw()
-	{
-		return std::string("HuffmanCoding error: can't access" + fileName).c_str();
-	}
-
-	NotInTableException::NotInTableException(char key) : key(key)
-	{}
-	const char * NotInTableException::what() const throw()
-	{
-		std::stringstream ss;
-		ss << "HuffmanCoding error : key " << key << " is not in table";
-		return ss.str().c_str();
-	}
-
-
-
-	Encoder::Node::sharedPtr Encoder::Node::newShared(unsigned prevalence, char character)
+{ 
+	Encoder::Node::sharedPtr Encoder::Node::newShared(char character, unsigned prevalence)
 	{
 		return std::make_shared<Node>(character, prevalence, true);
 	}
@@ -52,21 +33,22 @@ namespace HuffmanCoding
 			 {
 				 readRawFile(in, toCompress);
 			 }
-			 catch (FileNotFoundException e)
+			 catch (std::exception e)
 			 {
 				 throw;
 			 }
-			 
 		 }
 		 else if (flag == EncoderInputFlags::rawString)
 		 {
 			 toCompress = in;
 		 }
+
+	 
 		 std::map<char, unsigned int> countedCharacters;
 		 countCharacters(toCompress,countedCharacters);
-		 createTable(createTree(countedCharacters),"");	
+		 Node::sharedPtr topOfTree = createTree(countedCharacters);
+		 createTable(topOfTree,"");	
 	 }
-
 
 	 Encoder::Node::sharedPtr Encoder::createTree(std::map<char,unsigned int>& countedCharacters)
 	 {
@@ -80,6 +62,7 @@ namespace HuffmanCoding
 		 for (auto it : countedCharacters)
 		 {
 			 huffQueue.push(Node::newShared(it.first, it.second));
+			// logMsg(std::string(1,it.first) + std::to_string(it.second));
 		 }
 
 		 Node::sharedPtr  top, left, right;
@@ -97,6 +80,7 @@ namespace HuffmanCoding
 			 top->right = right;
 			 huffQueue.push(top);
 		 }
+		 prettyPrint(huffQueue.top(),"");
 		 return huffQueue.top();
 	 }
 
@@ -128,7 +112,9 @@ namespace HuffmanCoding
 		 }
 		 else
 		 {
-			 throw FileNotFoundException(filename);
+			 std::string errorMsg("Error at HuffmanCoding::Encoder::readRawFile can't open file: ");
+			 errorMsg += filename;
+			 throw std::runtime_error(errorMsg.c_str());
 		 }
 		 out = strBuffer.str();
 	 }
@@ -141,7 +127,7 @@ namespace HuffmanCoding
 
 			 if (it == countedCharacters.end())
 			 {
-				 countedCharacters.insert(std::pair<char, unsigned int>(rawStr[i], 0));
+				 countedCharacters.insert(std::pair<char, unsigned int>(rawStr[i], 1));
 			 }
 			 else
 			 {
@@ -150,22 +136,30 @@ namespace HuffmanCoding
 		 }
 	 }
 
-	 void Encoder::printTable(PrintFlags flag)
+	 void Encoder::printTable(/*PrintFlags flag*/)
 	 {
-		 switch (flag)
+		 //auto localTable = this->huffTable;
+
+		 //switch (flag)
+		 //{
+		 //case PrintFlags::unsorted:
+			// break;
+		 //case PrintFlags::alphabeticalOrder:
+
+			// break;
+		 ////case PrintFlags::longestCode:
+			//// break;
+		 ////case PrintFlags::shortestCode:
+			//// break;
+		 //}
+
+		 std::for_each(huffTable.begin(), huffTable.end(), [](std::pair<char, std::string>& pair)
 		 {
-		 case PrintFlags::unsorted:
-			 break;
-		 case PrintFlags::alphabeticalOrder:
-			 break;
-		 case PrintFlags::longestCode:
-			 break;
-		 case PrintFlags::shortestCode:
-			 break;
-		 }
+			 std::cout << pair.first << " : " << pair.second << std::endl;
+		 });
 	 }
 
-	 void Encoder::safeToFile()
+	 void Encoder::safeToFile(std::string filename)
 	 {
 	 }
 
@@ -174,7 +168,9 @@ namespace HuffmanCoding
 		 auto it = huffTable.find(key);
 		 if (it == huffTable.end())
 		 {
-			 throw NotInTableException(key);
+			 std::string errorMsg("Error at HuffmanCoding::Encoder::getFromTable: not in table: ");
+			 errorMsg += key,
+			 throw std::runtime_error(errorMsg);
 		 }
 		 else
 		 {

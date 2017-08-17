@@ -7,41 +7,26 @@
 #include <string>
 #include <exception>
 
+
+#include "Logger.h"
+
 //TODO: use typedef instead map<char, unsigned>
 
 namespace HuffmanCoding
 {
-	class FileNotFoundException : public std::exception
-	{
-	private:
-		std::string fileName;
-	public:
-		explicit FileNotFoundException(std::string fileName);
-		virtual const char* what() const throw();
-	};
-
-	class NotInTableException : public std::exception
-	{
-	private:
-		char key;
-	public:
-		explicit NotInTableException(char key);
-		virtual const char* what() const throw();
-	};
-
 	enum EncoderInputFlags 
 	{
 		filename,
 		rawString
 	};
 
-	enum PrintFlags
-	{
-		alphabeticalOrder,
-		shortestCode,
-		longestCode,
-		unsorted
-	};
+	//enum PrintFlags
+	//{
+	//	alphabeticalOrder,
+	//	//shortestCode,
+	//	//longestCode,
+	//	unsorted
+	//};
 
 	class Encoder
 	{
@@ -51,7 +36,7 @@ namespace HuffmanCoding
 		{
 			typedef std::shared_ptr<Node> sharedPtr;
 
-			static sharedPtr newShared(unsigned prevalence, char character);
+			static sharedPtr newShared(char character, unsigned prevalence);
 			static sharedPtr newShared(unsigned prevalence);
 
 			char character;
@@ -62,6 +47,36 @@ namespace HuffmanCoding
 
 			Node(char character, unsigned int prevalence, bool isLeaf);		
 		};
+
+		//ONLY FOR TEST PURPOSE
+		void prettyPrint(Node::sharedPtr node, std::string str)
+		{
+		/*	if (node)
+			{
+
+				if (node->isLeaf)
+				{
+					logMsg(std::string(1, node->character) + " : " + str);
+				}
+
+				prettyPrint(node->left, str + "0");
+				prettyPrint(node->right, str + "1");
+			}*/
+
+			if (node)
+			{
+				if (node->isLeaf)
+				{
+					logMsg(std::string(1, node->character) + " : " + str);
+				}
+				else
+				{
+					prettyPrint(node->left, str + "0");
+					prettyPrint(node->right, str + "1");
+				}
+			}
+
+		}
 
 		template <typename comp>
 		using HuffQueue = std::priority_queue<Node::sharedPtr, std::vector<Node::sharedPtr>, comp>;
@@ -76,8 +91,8 @@ namespace HuffmanCoding
 	public:
 		Encoder(std::string const& in,EncoderInputFlags flag);
 
-		void printTable(PrintFlags flag);
-		void safeToFile();
+		void printTable(/*PrintFlags flag*/);
+		void safeToFile(std::string filename);
 		std::string getFromTable(char key);
 	};
 
