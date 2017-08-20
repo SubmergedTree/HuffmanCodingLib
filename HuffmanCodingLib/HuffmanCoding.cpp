@@ -179,7 +179,7 @@ namespace HuffmanCoding
 	 void Encoder::safeTableToFile(std::string const& filename)
 	 {
 		 std::ofstream out("key" + filename);
-		 if (!out.is_open)
+		 if (!out.is_open())
 		 {
 			 throw std::runtime_error("HuffmanCoding::Encoder::safeTableToFile: can't open file");
 		 }
@@ -279,6 +279,12 @@ namespace HuffmanCoding
 		 for (int i = 0; i < size; i++)
 		 {
 			 out.write((char*)bytesToStore[i], sizeof(unsigned char));
+		 }
+
+		 for (auto it : bytesToStore)
+		 {
+			 delete it;
+			 it = nullptr;
 		 }
 	 }
 
