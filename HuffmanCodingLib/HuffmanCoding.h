@@ -51,18 +51,6 @@ namespace HuffmanCoding
 		//ONLY FOR TEST PURPOSE
 		void prettyPrint(Node::sharedPtr node, std::string str)
 		{
-		/*	if (node)
-			{
-
-				if (node->isLeaf)
-				{
-					logMsg(std::string(1, node->character) + " : " + str);
-				}
-
-				prettyPrint(node->left, str + "0");
-				prettyPrint(node->right, str + "1");
-			}*/
-
 			if (node)
 			{
 				if (node->isLeaf)
@@ -82,17 +70,19 @@ namespace HuffmanCoding
 		using HuffQueue = std::priority_queue<Node::sharedPtr, std::vector<Node::sharedPtr>, comp>;
 
 		std::map<char, std::string> huffTable;
+		std::string encodedText;
 
 		Node::sharedPtr createTree(std::map<char, unsigned int>& countedCharacters);
 		void createTable(Node::sharedPtr node, std::string res);
 		void readRawFile(std::string const& filename, std::string& out);
 		void countCharacters(std::string& rawStr, std::map<char, unsigned int>& countedCharacters);
-
+		void translateText(std::string const& toCompress);
+		void safeTableToFile(std::string const& filename);
 	public:
 		Encoder(std::string const& in,EncoderInputFlags flag);
 
 		void printTable(/*PrintFlags flag*/);
-		void safeToFile(std::string filename);
+		void safeToFile(std::string const& filename);
 		std::string getFromTable(char key);
 	};
 
