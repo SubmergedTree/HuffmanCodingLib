@@ -47,10 +47,10 @@ namespace HuffmanCoding
 	 }
 
 
-	 Encoder::Encoder(std::string const& in, EncoderInputFlags flag) 
+	 Encoder::Encoder(std::string const& in, InputFlags flag) 
 	 {
 		 std::string toCompress;
-		 if (flag == EncoderInputFlags::filename)
+		 if (flag == InputFlags::filename)
 		 {
 			 try
 			 {
@@ -61,7 +61,7 @@ namespace HuffmanCoding
 				 throw;
 			 }
 		 }
-		 else if (flag == EncoderInputFlags::rawString)
+		 else if (flag == InputFlags::rawString)
 		 {
 			 toCompress = in;
 		 }
@@ -187,7 +187,7 @@ namespace HuffmanCoding
 		 {
 			 for (auto it : huffTable)
 			 {
-				 out << it.first << " / " << it.second << "\n";
+				 out << it.first << " " << it.second << "\n";
 			 }
 			 out.close();
 		 }
@@ -303,6 +303,66 @@ namespace HuffmanCoding
 		 }
 	 }
 
+	 std::string Encoder::getEncodedText()
+	 {
+		 return encodedText;
+
+	 }
+
+
+
+	 Decoder::Decoder(std::string const& in, InputFlags flag)
+	 {
+		 std::string toDecode;
+		 
+		 if (flag == InputFlags::filename)
+		 {
+			 readTableFromFile("key" + in);
+			 readEncodedFile(in);
+		 }
+		 else if (flag == InputFlags::rawString)
+		 {
+			 toDecode = in;
+		 }
+	 }
+
+	 void Decoder::readTableFromFile(std::string const& filename)
+	 {
+		 std::ifstream in(filename);
+		 char key;
+		 std::string data;
+		 if (in.is_open())
+		 {
+			 while (in >> key >> data)
+			 {
+				 huffTable.insert(std::pair<char, std::string>(key, data));
+			 }
+		 }
+		 else
+		 {
+			 //throw
+		 }
+		 in.close();
+	 }
+
+	 void Decoder::readEncodedFile(std::string const& filename)
+	 {
+		 std::ifstream in(filename, std::ios::in | std::ios::binary);
+
+	 }
+
+	 void Decoder::encode()
+	 {
+	 }
+
+	 std::string Decoder::getEncoded()
+	 {
+		 return std::string();
+	 }
+
+	 void Decoder::safeEncodedToFile()
+	 {
+	 }
 
 }
 

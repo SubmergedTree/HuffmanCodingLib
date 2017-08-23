@@ -13,7 +13,7 @@ namespace Test
 		{
 			HuffmanCoding::Encoder* encoder;
 		
-			encoder = new HuffmanCoding::Encoder("test", HuffmanCoding::EncoderInputFlags::rawString);
+			encoder = new HuffmanCoding::Encoder("test", HuffmanCoding::InputFlags::rawString);
 	
 			std::string res;
 			try
@@ -54,7 +54,7 @@ namespace Test
 
 		TEST_METHOD(RAWSTRING2)
 		{
-			HuffmanCoding::Encoder encoder("MISSISIPI", HuffmanCoding::EncoderInputFlags::rawString);
+			HuffmanCoding::Encoder encoder("MISSISIPI", HuffmanCoding::InputFlags::rawString);
 			
 			std::string res;
 			try
@@ -108,7 +108,7 @@ namespace Test
 			HuffmanCoding::Encoder* encoder;
 			try
 			{
-				encoder = new HuffmanCoding::Encoder("STRINGFROMFILE1.txt", HuffmanCoding::EncoderInputFlags::filename);
+				encoder = new HuffmanCoding::Encoder("STRINGFROMFILE1.txt", HuffmanCoding::InputFlags::filename);
 			}
 			catch(std::exception& e)
 			{
