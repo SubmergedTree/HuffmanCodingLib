@@ -59,7 +59,7 @@ namespace HuffmanCoding
 		};
 
 		//ONLY FOR TEST PURPOSE
-		void prettyPrint(Node::sharedPtr node, std::string str)
+	/*	void prettyPrint(Node::sharedPtr node, std::string str)
 		{
 			if (node)
 			{
@@ -74,7 +74,7 @@ namespace HuffmanCoding
 				}
 			}
 
-		}
+		}*/
 
 		template <typename comp>
 		using HuffQueue = std::priority_queue<Node::sharedPtr, std::vector<Node::sharedPtr>, comp>;
@@ -108,10 +108,10 @@ namespace HuffmanCoding
 		// toCompress: text to encode.
 		void translateText(std::string const& toCompress);
 
-		// Saves table which contains specific binary code for a character.
-		// Named like the actual compressed file but with prefix "key".
+		// Saves table which contains specific binary code for a character and size of the dataset.
+		// Named like the actual compressed file but with prefix "key". 
 		// filename: name from file.
-		void safeTableToFile(std::string const& filename);
+		void safeTableToFile(std::string const& filename, int size);
 	public:
 		Encoder(std::string const& in,InputFlags flag);
 
@@ -119,7 +119,7 @@ namespace HuffmanCoding
 		void printTable(/*PrintFlags flag*/);
 
 		// Safe encoded data to file.
-		// filename: name from file.
+		// filename: name of file.
 		void safeToFile(std::string const& filename);
 
 		// Get Huffman code of a character.
@@ -136,15 +136,37 @@ namespace HuffmanCoding
 	class Decoder
 	{
 	private:
-		std::map<char, std::string> huffTable;
+		// Stores Huffman codes.
+		std::map<std::string, char> huffTable;
 
-		void readTableFromFile(std::string const& filename);
-		void readEncodedFile(std::string const& filename);
-		void encode();
+		// decoded text.
+		std::string decodedText;
+
+		// Read File with prefix "key".
+		// This file stores Huffman codes and number of characters.
+		// filename: name of file.
+		// returns size of dataset.
+		int readTableFromFile(std::string const& filename);
+
+		// Read binary encoded text.
+		// filename: name of file.
+		// size: size of dataset.
+		// out: wil be filled with Huffman code.
+		void readEncodedFile(std::string const& filename, int size, std::string& out);
+
+		// Decoding text.
+		// text: Encoded text to decode.
+		void decode(std::string const& text);
+
 	public:
-		Decoder(std::string const& in, InputFlags flag);
-		std::string getEncoded();
-		void safeEncodedToFile();
 
+		Decoder(std::string const& in, InputFlags flag);
+
+		// Return decoded Text.
+		std::string getDecoded();
+
+		// Safe decoded text to file.
+		// filename: name of file to save.
+		void safeDecodedToFile(std::string const& filename);
 	};
 }

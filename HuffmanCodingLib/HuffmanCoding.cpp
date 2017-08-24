@@ -7,6 +7,11 @@
 
 namespace HuffmanCoding
 { 
+
+////////////////Byte////////////////
+
+	// Byte with abbility to address each bit.
+	// Used to save Huffman Code efficient to binary file.
 	union Byte
 	{
 		unsigned char byte;
@@ -15,6 +20,7 @@ namespace HuffmanCoding
 			unsigned bit0 : 1, bit1 : 1, bit2 : 1, bit3 : 1, bit4 : 1, bit5 : 1, bit6 : 1, bit7 : 1;
 		}bits;
 
+		// Set all bits default to zero. 
 		Byte()
 		{
 			bits.bit0 = 0;
@@ -29,6 +35,7 @@ namespace HuffmanCoding
 	};
 
 
+////////////////Encoder::Node////////////////
 
 	Encoder::Node::sharedPtr Encoder::Node::newShared(char character, unsigned prevalence)
 	{
@@ -47,6 +54,9 @@ namespace HuffmanCoding
 	 }
 
 
+
+////////////////Encoder////////////////
+
 	 Encoder::Encoder(std::string const& in, InputFlags flag) 
 	 {
 		 std::string toCompress;
@@ -56,7 +66,7 @@ namespace HuffmanCoding
 			 {
 				 readRawFile(in, toCompress);
 			 }
-			 catch (std::exception e)
+			 catch (std::exception& e)
 			 {
 				 throw;
 			 }
@@ -103,7 +113,7 @@ namespace HuffmanCoding
 			 top->right = right;
 			 huffQueue.push(top);
 		 }
-		 prettyPrint(huffQueue.top(),"");
+		 //prettyPrint(huffQueue.top(),"");
 		 return huffQueue.top();
 	 }
 
@@ -176,7 +186,7 @@ namespace HuffmanCoding
 		 }
 	 }
 
-	 void Encoder::safeTableToFile(std::string const& filename)
+	 void Encoder::safeTableToFile(std::string const& filename, int size)
 	 {
 		 std::ofstream out("key" + filename);
 		 if (!out.is_open())
@@ -185,6 +195,9 @@ namespace HuffmanCoding
 		 }
 		 else
 		 {
+
+			 out << size << std::endl;
+
 			 for (auto it : huffTable)
 			 {
 				 out << it.first << " " << it.second << "\n";
@@ -217,21 +230,21 @@ namespace HuffmanCoding
 
 	 void Encoder::safeToFile(std::string const& filename)
 	 {
+		 float howManyBytes = encodedText.size() / 8.0f;
+		 int size = static_cast<int>(ceilf(howManyBytes));
+
 		 try
 		 {
-			 safeTableToFile(filename);
+			 safeTableToFile(filename, size);
 		 }
 		 catch (std::exception& e)
 		 {
 			 throw;
 		 }
 
-		 float howManyBytes = encodedText.size() / 8.0f;
-		 int size = static_cast<int>(ceilf(howManyBytes));
-
 		 std::vector<Byte*> bytesToStore;
 		 bytesToStore.reserve(size);
-
+		 //logMsg(encodedText);
 		 for (int i = 0; i < size; i++)
 		 {
 			 bytesToStore.push_back(new Byte());
@@ -264,11 +277,26 @@ namespace HuffmanCoding
 				 break;
 			 case 7:
 				 bytesToStore[whichByte]->bits.bit7 = static_cast<unsigned>(encodedText[i]);
+				 whichByte++;
+				 cnt = -1;
 				 break;
 			 default:
 				 break;
 			 }
 		 }
+		 std::string resStr;
+		 for (int i = 0; i< size; i++)
+		 {
+			 resStr += std::to_string(bytesToStore[i]->bits.bit0);
+			 resStr += std::to_string(bytesToStore[i]->bits.bit1);
+			 resStr += std::to_string(bytesToStore[i]->bits.bit2);
+			 resStr += std::to_string(bytesToStore[i]->bits.bit3);
+			 resStr += std::to_string(bytesToStore[i]->bits.bit4);
+			 resStr += std::to_string(bytesToStore[i]->bits.bit5);
+			 resStr += std::to_string(bytesToStore[i]->bits.bit6);
+			 resStr += std::to_string(bytesToStore[i]->bits.bit7);
+		 }
+	//	 logMsg(resStr);
 
 		 std::ofstream out(filename.c_str(), std::ios::out | std::ios::binary);
 		 if (!out.is_open())
@@ -310,6 +338,7 @@ namespace HuffmanCoding
 	 }
 
 
+////////////////Decoder////////////////
 
 	 Decoder::Decoder(std::string const& in, InputFlags flag)
 	 {
@@ -317,52 +346,135 @@ namespace HuffmanCoding
 		 
 		 if (flag == InputFlags::filename)
 		 {
-			 readTableFromFile("key" + in);
-			 readEncodedFile(in);
+			 try
+			 {
+				 int size = readTableFromFile("key" + in);
+				 readEncodedFile(in, size, toDecode);
+			 }
+			 catch (const std::exception&)
+			 {
+				 throw;
+			 }
 		 }
 		 else if (flag == InputFlags::rawString)
 		 {
 			 toDecode = in;
 		 }
+		 decode(toDecode);
 	 }
 
-	 void Decoder::readTableFromFile(std::string const& filename)
+	 int Decoder::readTableFromFile(std::string const& filename)
 	 {
 		 std::ifstream in(filename);
 		 char key;
 		 std::string data;
+		 int size = 0;
 		 if (in.is_open())
 		 {
+
+			 in >> size;
 			 while (in >> key >> data)
 			 {
-				 huffTable.insert(std::pair<char, std::string>(key, data));
+				 huffTable.insert(std::pair<std::string, char>(data, key));
 			 }
 		 }
 		 else
 		 {
-			 //throw
+			throw std::runtime_error("Error at HuffmanCoding::Decoder::readTableFromFile: can't open file: " + filename);
 		 }
+		 logMsg("size: " + std::to_string(size));
+
+		 for (auto it : huffTable)
+		 {
+			 logMsg("Table content: " + it.first  + " " + std::string(1, it.second));
+		 }
+
 		 in.close();
+
+		 return size;
 	 }
 
-	 void Decoder::readEncodedFile(std::string const& filename)
+	 void Decoder::readEncodedFile(std::string const& filename, int size, std::string& out)
 	 {
 		 std::ifstream in(filename, std::ios::in | std::ios::binary);
 
+		 std::vector<Byte*> bytesToRead;
+		 bytesToRead.reserve(size);
+
+		 out = "";
+
+		 for (int i = 0; i < size; i++)
+		 {
+			 bytesToRead.push_back(new Byte());
+		 }
+	
+		 if (in.is_open())
+		 {
+			 for (int i = 0; i < size; i++)
+			 {
+				 in.read((char*)bytesToRead[i], sizeof(unsigned char));
+
+				 out += std::to_string(bytesToRead[i]->bits.bit0);
+				 out += std::to_string(bytesToRead[i]->bits.bit1);
+				 out += std::to_string(bytesToRead[i]->bits.bit2);
+				 out += std::to_string(bytesToRead[i]->bits.bit3);
+				 out += std::to_string(bytesToRead[i]->bits.bit4);
+				 out += std::to_string(bytesToRead[i]->bits.bit5);
+				 out += std::to_string(bytesToRead[i]->bits.bit6);
+				 out += std::to_string(bytesToRead[i]->bits.bit7);
+			 }
+		 }
+		 else
+		 {
+			 throw std::runtime_error("Error at HuffmanCoding::Decoder::readEncodedFile: can't open file: " + filename);
+		 }
+
+		 for (auto it : bytesToRead)
+		 {
+			 delete it;
+			 it = nullptr;
+		 }
 	 }
 
-	 void Decoder::encode()
+	 void Decoder::decode(std::string const& text)
 	 {
+		 std::string toFind;
+		 for (auto strIt : text)
+		 {
+			 toFind += strIt;
+			 auto huffTableIt = huffTable.find(toFind);
+			
+			 if (huffTableIt == huffTable.end())
+			 {
+				 continue;
+			 }
+			 else 
+			 {
+				 decodedText += huffTableIt->second;
+				 toFind = "";
+			 }
+			 
+			 //throw std::runtime_error("HuffmanCoding::Encoder::translateText(): can't find character in huffTable: " + std::string(1,it));
+		 }
 	 }
 
-	 std::string Decoder::getEncoded()
+	 std::string Decoder::getDecoded()
 	 {
-		 return std::string();
+		 return decodedText;
 	 }
 
-	 void Decoder::safeEncodedToFile()
+	 void Decoder::safeDecodedToFile(std::string const& filename)
 	 {
+		 std::ofstream out(filename);
+		 if (!out.is_open())
+		 {
+			 throw std::runtime_error("HuffmanCoding::Decoder::safeDecodedToFile: can't open file: + filename");
+		 }
+		 else
+		 {
+			 out << decodedText << std::endl;	 
+			 out.close();
+		 }
 	 }
-
 }
 

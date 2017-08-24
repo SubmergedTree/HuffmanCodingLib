@@ -159,6 +159,21 @@ namespace Test
 				Assert::Fail();
 			}
 			Assert::AreEqual(std::string("101"), res);
+
+			encoder->safeToFile("test.huff");
+
+			HuffmanCoding::Decoder * decoder;
+
+			try
+			{
+				decoder = new HuffmanCoding::Decoder("test.huff",HuffmanCoding::InputFlags::filename);
+				decoder->safeDecodedToFile("decoded.txt");
+			}
+			catch (const std::exception& e)
+			{
+				Logger::WriteMessage(e.what());
+				Assert::Fail();
+			}
 		}
 
 	};
