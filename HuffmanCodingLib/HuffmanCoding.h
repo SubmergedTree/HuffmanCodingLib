@@ -10,7 +10,6 @@
 
 #include "Logger.h"
 
-//TODO: use typedef instead map<char, unsigned>
 
 namespace HuffmanCoding
 {
