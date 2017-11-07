@@ -14,7 +14,7 @@
 
 namespace HuffmanCoding
 {
-	// Decide if "in" parameter is a filename to a file to compress or a string which
+	// Decide if "in" parameter is a filename or a string which
 	// should be compressed.
 	enum InputFlags 
 	{
